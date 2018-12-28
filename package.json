@@ -1,0 +1,22 @@
+{
+  "name": "web-scraper-gcp",
+  "version": "0.0.1",
+  "description": "Node.js web crawler designed to operate in the Google Cloud Platform.",
+  "main": "index.js",
+  "scripts": {
+    "run-dev": "npm run start-redis && npm run run-script && npm run stop-redis",
+    "run-script": "NODE_ENV=dev GOOGLE_APPLICATION_CREDENTIALS='./secret/secret.json' node index.js",
+    "start-redis": "redis-server ~/Documents/Projects/redis-stable/redis.conf --daemonize yes",
+    "stop-redis": "redis-cli shutdown",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Simo Ahava",
+  "license": "MIT",
+  "dependencies": {
+    "headless-chrome-crawler": "^1.8.0",
+    "redis": "^2.8.0"
+  },
+  "devDependencies": {
+    "@google-cloud/bigquery": "^2.0.5"
+  }
+}

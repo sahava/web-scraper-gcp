@@ -1,0 +1,9 @@
+{
+  "domain": "simoahava.com",
+  "startUrl": "https://www.simoahava.com/",
+  "projectId": "web-scraper-gcp",
+  "bigQuery": {
+    "datasetId": "web_scraper_gcp",
+    "tableId": "crawl_results"
+  }
+}
