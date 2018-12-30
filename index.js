@@ -11,7 +11,7 @@ const bigquery = new BigQuery({
   projectId: config.projectId
 });
 
-const cache = new RedisCache({ host: '127.0.0.1', port: 6379 });
+const cache = new RedisCache({ host: config.redis.host, port: config.redis.port });
 
 const FILE = './test.json';
 
@@ -44,12 +44,12 @@ class BigQueryExporter extends BaseExporter {
       document_title: result.result.title,
       meta_description: result.result.metaDescription
     };
-    /*await bigquery
+    await bigquery
       .dataset(config.bigQuery.datasetId)
       .table(config.bigQuery.tableId)
-      .insert([item]);*/
+      .insert([item]);
 
-    this._stream.write(`${JSON.stringify(item)}\n`);
+    // this._stream.write(`${JSON.stringify(item)}\n`);
   }
 
   writeHeader() {}
@@ -94,13 +94,13 @@ async function createBigQueryTable() {
   }
 }
 
-async function launchCrawler(event, callback) {
+async function launchCrawler() {
   try {
     start = new Date().getTime();
     console.log(`Creating table ${config.bigQuery.tableId} in dataset ${config.bigQuery.datasetId}`);
 
-    /*await createBigQueryDataset();
-    await createBigQueryTable();*/
+    await createBigQueryDataset();
+    await createBigQueryTable();
 
     console.log(`Starting crawl from ${config.startUrl}`);
 
@@ -123,19 +123,11 @@ async function launchCrawler(event, callback) {
 
     await crawler.queue({url: config.startUrl, maxDepth: 9999999});
 
-    // Set timeout for script
-    setTimeout(() => {
-      crawler.pause();
-    }, 20000);
-
-    // Shut down
     await crawler.onIdle();
-    console.log(`Stopping with ${await crawler.queueSize()} items left in queue.`);
     const finish = new Date().getTime();
     console.log(`Crawl took ${finish - start} milliseconds.`);
     console.log(`Crawled ${count} files.`);
     await crawler.close();
-    process.exit();
   } catch(e) {
     console.error(e);
   }
@@ -144,7 +136,5 @@ async function launchCrawler(event, callback) {
 module.exports.launchCrawler = launchCrawler;
 
 (async() => {
-  if (['dev', 'test'].indexOf(process.env.NODE_ENV) > -1) {
-    await launchCrawler('', '');
-  }
+  await launchCrawler();
 })();

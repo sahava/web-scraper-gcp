@@ -5,5 +5,9 @@
   "bigQuery": {
     "datasetId": "web_scraper_gcp",
     "tableId": "crawl_results"
+  },
+  "redis": {
+    "host": "10.0.0.3",
+    "port": 6379
   }
 }
