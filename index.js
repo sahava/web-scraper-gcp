@@ -29,9 +29,7 @@ class BigQueryExporter extends BaseExporter {
       const now = new Date().getTime();
       console.log(`${count} files crawled in ${now-start} milliseconds.`)
     }
-    if (process.env.NODE_ENV === 'dev') {
-      console.log(`Crawled ${result.response.url}`);
-    }
+    console.log(`Crawled ${result.response.url}`);
     count += 1;
 
     const item = {
@@ -48,8 +46,6 @@ class BigQueryExporter extends BaseExporter {
       .dataset(config.bigQuery.datasetId)
       .table(config.bigQuery.tableId)
       .insert([item]);
-
-    // this._stream.write(`${JSON.stringify(item)}\n`);
   }
 
   writeHeader() {}
@@ -105,6 +101,7 @@ async function launchCrawler() {
     console.log(`Starting crawl from ${config.startUrl}`);
 
     const crawler = await HCCrawler.launch({
+      args: ['--no-sandbox'],
       exporter,
       preRequest: (options => {
         if (options.url.indexOf(config.domain) === -1) {
