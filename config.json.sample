@@ -1,6 +1,6 @@
 {
-  "domain": "simoahava.com",
-  "startUrl": "https://www.simoahava.com/",
+  "domain": "gtmtools.com",
+  "startUrl": "https://www.gtmtools.com/",
   "projectId": "web-scraper-gcp",
   "bigQuery": {
     "datasetId": "web_scraper_gcp",
