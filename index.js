@@ -11,7 +11,7 @@ const bigquery = new BigQuery({
   projectId: config.projectId
 });
 
-const cache = new RedisCache({ host: config.redis.host, port: config.redis.port });
+const cache = config.redis.active ? new RedisCache({ host: config.redis.host, port: config.redis.port }) : null;
 
 const FILE = './test.json';
 
@@ -54,8 +54,7 @@ class BigQueryExporter extends BaseExporter {
 }
 
 const exporter = new BigQueryExporter({
-  file: FILE,
-  encoding: {flags: 'a'}
+  file: FILE
 });
 
 async function createBigQueryDataset() {

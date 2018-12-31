@@ -7,6 +7,7 @@
     "tableId": "crawl_results"
   },
   "redis": {
+    "active": false,
     "host": "10.0.0.3",
     "port": 6379
   }
