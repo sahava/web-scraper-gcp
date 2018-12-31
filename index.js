@@ -100,6 +100,7 @@ async function launchCrawler() {
     console.log(`Starting crawl from ${config.startUrl}`);
 
     const crawler = await HCCrawler.launch({
+      maxConcurrency: 50,
       args: ['--no-sandbox'],
       exporter,
       preRequest: (options => {
