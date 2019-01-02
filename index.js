@@ -60,7 +60,7 @@ async function writeToBigQuery(result) {
     final_url: result.response.url,
     http_status: result.response.status,
     content_type: result.response.headers['content-type'],
-    external: result.response.url.indexOf('https://www.simoahava.com/') === -1,
+    external: result.response.url.indexOf(config.domain) === -1,
     previous_url: result.previousUrl,
     document_title: result.result.title,
     meta_description: result.result.metaDescription
