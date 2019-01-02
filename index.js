@@ -41,7 +41,7 @@ const bigquery = new BigQuery({
 const validator = new Validator;
 
 // Only set cache if the configuration file has redis set to active
-const cache = config.redis.active ? new RedisCache({ host: config.redis.host, port: config.redis.port }) : null;
+let cache = null;
 
 let count = 0;
 let start = null;
@@ -75,7 +75,7 @@ async function writeToBigQuery(result) {
 /**
  * Creates a dataset (if not already created) in BigQuery.
  *
- * @returns {Promise<DatasetResponse>}
+ * @returns {Promise<DatasetResponse>} Resolved Promise in the form of a DatasetResponse object.
  */
 async function createBigQueryDataset() {
   try {
@@ -91,7 +91,7 @@ async function createBigQueryDataset() {
 /**
  * Creates a table (if not already created) in BigQuery.
  *
- * @returns {Promise<TableResponse>}
+ * @returns {Promise<TableResponse>} Resolved Promise in the form of a TableResponse object.
  */
 async function createBigQueryTable() {
   const options = {
@@ -115,6 +115,34 @@ async function createBigQueryTable() {
 }
 
 /**
+ * Checks if the crawled URL is external. if it is, only crawl the current page but not any of its links.
+ *
+ * @param {object} options The options object for each crawled page.
+ * @returns {boolean} Returns true after setting the new maxDepth.
+ */
+function preRequest(options) {
+  if (options.url.indexOf(config.domain) === -1) {
+    options.maxDepth = 1;
+  }
+  return true;
+}
+
+/**
+ * Use jQuery to return title and Meta Description content of each crawled page.
+ *
+ * Ignored from tests due to use of jQuery.
+ *
+ * @returns {object} The object containing title and metaDescription data.
+ */
+/* istanbul ignore next */
+function evaluatePage() {
+  return {
+    title: $('title').text(),
+    metaDescription: $('meta[name="description"]').attr('content')
+  };
+}
+
+/**
  * Launches the crawler.
  *
  * @returns {Promise<void>}
@@ -132,16 +160,8 @@ async function launchCrawler() {
     const options = extend({
       args: config.puppeteerArgs,
       onSuccess: writeToBigQuery,
-      preRequest: (options => {
-        if (options.url.indexOf(config.domain) === -1) {
-          options.maxDepth = 1;
-        }
-        return true;
-      }),
-      evaluatePage: (() => ({
-        title: $('title').text(),
-        metaDescription: $('meta[name="description"]').attr('content')
-      })),
+      preRequest,
+      evaluatePage,
       cache,
       skipRequestedRedirect: true
     }, config.crawlerOptions);
@@ -168,13 +188,17 @@ function init() {
   if (result.errors.length) {
     throw new Error(`Error(s) in configuration file: ${JSON.stringify(result.errors, null, " ")}`);
   } else {
+    cache = config.redis.active ? new RedisCache({ host: config.redis.host, port: config.redis.port }) : null;
     console.log(`Configuration validated successfully`);
   }
 }
 
 /**
  * Runs the intiialization and crawler unless in test, in which case only the module exports are done for the test suite.
+ *
+ * Ignored from test coverage.
  */
+/* istanbul ignore next */
 (async () => {
   try {
     if (process.env.NODE_ENV !== 'test') {
@@ -186,7 +210,9 @@ function init() {
         _init: init,
         _createBigQueryTable: createBigQueryTable,
         _createBigQueryDataset: createBigQueryDataset,
-        _writeToBigQuery: writeToBigQuery
+        _writeToBigQuery: writeToBigQuery,
+        _preRequest: preRequest,
+        _evaluatePage: evaluatePage
       };
     }
     module.exports.launchCrawler = launchCrawler;
