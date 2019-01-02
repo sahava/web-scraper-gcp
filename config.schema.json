@@ -1,0 +1,52 @@
+{
+  "id": "/Config",
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string"
+    },
+    "startUrl": {
+      "type": "string"
+    },
+    "projectId": {
+      "type": "string"
+    },
+    "bigQuery": {
+      "type": "object",
+      "properties": {
+        "datasetId": {
+          "type": "string"
+        },
+        "tableId": {
+          "type": "string"
+        }
+      },
+      "required": ["datasetId", "tableId"]
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "boolean"
+        },
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "number"
+        }
+      },
+      "required": ["active", "host", "port"]
+    },
+    "puppeteerArgs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "crawlerOptions": {
+      "type": "object"
+    }
+  },
+  "required": ["domain", "startUrl", "projectId", "bigQuery", "redis", "puppeteerArgs", "crawlerOptions"]
+}

@@ -6,3 +6,6 @@ secret
 
 test.json
 config.json
+
+.nyc_output
+coverage

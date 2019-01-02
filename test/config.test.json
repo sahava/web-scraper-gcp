@@ -1,0 +1,19 @@
+{
+  "domain": "simoahava.com",
+  "startUrl": "https://www.simoahava.com/",
+  "projectId": "web-scraper-gcp",
+  "bigQuery": {
+    "datasetId": "web_scraper_gcp",
+    "tableId": "crawl_results"
+  },
+  "redis": {
+    "active": false,
+    "host": "10.0.0.3",
+    "port": 6379
+  },
+  "puppeteerArgs": ["--no-sandbox"],
+  "crawlerOptions": {
+    "maxConcurrency": 50,
+    "skipRequestedRedirect": true
+  }
+}

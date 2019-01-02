@@ -8,15 +8,22 @@
     "run-script": "NODE_ENV=dev GOOGLE_APPLICATION_CREDENTIALS='./secret/secret.json' node index.js",
     "start-redis": "redis-server ~/Documents/Projects/redis-stable/redis.conf --daemonize yes",
     "stop-redis": "redis-cli shutdown",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test nyc --reporter=lcov ava --verbose ./test/*.test.js && nyc report"
   },
   "author": "Simo Ahava",
   "license": "MIT",
   "dependencies": {
     "headless-chrome-crawler": "^1.8.0",
+    "jsonschema": "^1.2.4",
+    "lodash": "^4.17.11",
     "redis": "^2.8.0"
   },
   "devDependencies": {
-    "@google-cloud/bigquery": "^2.0.5"
+    "@google-cloud/bigquery": "^2.0.5",
+    "@google-cloud/nodejs-repo-tools": "^3.1.0",
+    "ava": "^1.0.1",
+    "nyc": "^13.1.0",
+    "proxyquire": "^2.1.0",
+    "sinon": "^7.2.2"
   }
 }
