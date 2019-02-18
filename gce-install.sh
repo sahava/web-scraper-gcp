@@ -1,21 +1,17 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash                                                                                                                                                                                                                             
 
-bucket='gs://web-scraper-config/config.json'
+bucket='gs://web-scraper-gcp/config.json'
 
 set -v
 
-apt-get update && apt-get install -yq git libgconf-2-4
+curl -sL https://deb.nodesource.com/setup_11.x | bash -
+apt-get update && apt-get install -yq git libgconf-2-4 nodejs
 apt-get update && apt-get install -y wget --no-install-recommends
 
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
 
 apt-get update && apt-get install -y google-chrome-unstable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst ttf-freefont --no-install-recommends
-
-mkdir /opt/nodejs
-curl https://nodejs.org/dist/latest/node-v11.6.0-linux-x64.tar.gz | tar vxzf - -C /opt/nodejs --strip-components=1
-ln -s /opt/nodejs/bin/node /usr/bin/node
-ln -s /opt/nodejs/bin/npm /usr/bin/npm
 
 git clone https://github.com/sahava/web-scraper-gcp.git
 
