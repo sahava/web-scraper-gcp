@@ -55,7 +55,8 @@ const mockResult = {
     size: 1,
     httpOnly: false,
     secure: false,
-    session: false
+    session: false,
+    sameSite: 'Lax'
   }]
 };
 
@@ -158,7 +159,8 @@ test.serial(`should write proper item to BigQuery`, async t => {
       size: c.size,
       httpOnly: c.httpOnly,
       secure: c.secure,
-      session: c.session
+      session: c.session,
+      sameSite: c.sameSite || null
     }))
   };
 

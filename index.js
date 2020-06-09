@@ -55,8 +55,6 @@ async function writeToBigQuery(result) {
   console.log(`Crawled ${result.response.url}`);
   count += 1;
 
-  console.log(result);
-
   const item = {
     requested_url: result.options.url,
     final_url: result.response.url,
@@ -73,12 +71,13 @@ async function writeToBigQuery(result) {
       size: c.size,
       httpOnly: c.httpOnly,
       secure: c.secure,
-      session: c.session
+      session: c.session,
+      sameSite: c.sameSite || null
     })),
     document_title: result.result.title,
     meta_description: result.result.metaDescription
   };
-
+  
   await bigquery
     .dataset(config.bigQuery.datasetId)
     .table(config.bigQuery.tableId)
