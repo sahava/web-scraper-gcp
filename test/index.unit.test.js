@@ -44,7 +44,18 @@ const mockResult = {
   previousUrl: 'https://www.simoahava.com/',
   result: {
     title: 'Test title',
-    metaDescription: null
+    metaDescription: null,
+    cookies: [{
+      name: 'test cookie',
+      value: 'test value',
+      domain: 'testdomain.com',
+      path: '/',
+      expires: 1591696664,
+      size: 1,
+      httpOnly: false,
+      secure: false,
+      session: false
+    }]
   }
 };
 
@@ -137,7 +148,39 @@ test.serial(`should write proper item to BigQuery`, async t => {
     external: mockResult.response.url.indexOf(mockConfig.domain) === -1,
     previous_url: mockResult.previousUrl,
     document_title: mockResult.result.title,
-    meta_description: mockResult.result.metaDescription
+    meta_description: mockResult.result.metaDescription,
+    cookies: mockResult.result.cookies.map(c => ({
+      name: c.name,
+      value: c.value,
+      domain: c.domain,
+      path: c.path,
+      expires: new Date(c.expires * 1000).toISOString(),
+      size: c.size,
+      httpOnly: c.httpOnly,
+      secure: c.secure,
+      session: c.session
+    }))
+  };
+
+  // Call function and verify behavior
+  await sample.program._writeToBigQuery(mockResult);
+  t.deepEqual(sample.mocks.bigquery.dataset().table().insert.args[0], [[expected]]);
+});
+
+test.serial(`should write proper item to BigQuery without cookie`, async t => {
+  // Initialize mocks
+  const sample = getSample();
+  mockResult.response.url = 'https://www.external.com/';
+  const expected = {
+    requested_url: mockResult.options.url,
+    final_url: mockResult.response.url,
+    http_status: mockResult.response.status,
+    content_type: mockResult.response.headers['content-type'],
+    external: mockResult.response.url.indexOf(mockConfig.domain) === -1,
+    previous_url: mockResult.previousUrl,
+    document_title: mockResult.result.title,
+    meta_description: mockResult.result.metaDescription,
+    cookies: []
   };
 
   // Call function and verify behavior
