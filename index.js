@@ -77,7 +77,7 @@ async function writeToBigQuery(result) {
     document_title: result.result.title,
     meta_description: result.result.metaDescription
   };
-  
+
   await bigquery
     .dataset(config.bigQuery.datasetId)
     .table(config.bigQuery.tableId)
@@ -91,8 +91,7 @@ async function writeToBigQuery(result) {
  */
 async function createBigQueryDataset() {
   try {
-    const [dataset] = await bigquery.createDataset(config.bigQuery.datasetId);
-    return dataset;
+    return bigquery.createDataset(config.bigQuery.datasetId);
   } catch(e) {
     if (e.message.indexOf('Already Exists') === -1) {
       throw e;
@@ -115,10 +114,9 @@ async function createBigQueryTable() {
     }
   };
   try {
-    const [table] = await bigquery
+    return bigquery
       .dataset(config.bigQuery.datasetId)
       .createTable(config.bigQuery.tableId, options);
-    return table;
   } catch(e) {
     if (e.message.indexOf('Already Exists') === -1) {
       throw e;
