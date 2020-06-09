@@ -62,6 +62,17 @@ async function writeToBigQuery(result) {
     content_type: result.response.headers['content-type'],
     external: result.response.url.indexOf(config.domain) === -1,
     previous_url: result.previousUrl,
+    cookies: result.response.url.indexOf(config.domain) === -1 ? [] : result.cookies.map(c => ({
+      name: c.name,
+      value: c.value,
+      domain: c.domain,
+      path: c.path,
+      expires: new Date(c.expires * 1000).toISOString(),
+      size: c.size,
+      httpOnly: c.httpOnly,
+      secure: c.secure,
+      session: c.session
+    })),
     document_title: result.result.title,
     meta_description: result.result.metaDescription
   };

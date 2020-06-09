@@ -30,6 +30,50 @@
     "type": "STRING"
   },
   {
+    "description": "Cookies set on the page",
+    "name": "cookies",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "type": "string"
+      },
+      {
+        "name": "domain",
+        "type": "string"
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "expires",
+        "type": "timestamp"
+      },
+      {
+        "name": "size",
+        "type": "int64"
+      },
+      {
+        "name": "httpOnly",
+        "type": "bool"
+      },
+      {
+        "name": "secure",
+        "type": "bool"
+      },
+      {
+        "name": "session",
+        "type": "bool"
+      }
+    ]
+  },
+  {
     "description": "Document title.",
     "name": "document_title",
     "type": "STRING"
