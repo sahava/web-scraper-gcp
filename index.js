@@ -85,46 +85,6 @@ async function writeToBigQuery(result) {
 }
 
 /**
- * Creates a dataset (if not already created) in BigQuery.
- *
- * @returns {Promise<DatasetResponse>} Resolved Promise in the form of a DatasetResponse object.
- */
-async function createBigQueryDataset() {
-  try {
-    return bigquery.createDataset(config.bigQuery.datasetId);
-  } catch(e) {
-    if (e.message.indexOf('Already Exists') === -1) {
-      throw e;
-    }
-  }
-}
-
-/**
- * Creates a table (if not already created) in BigQuery.
- *
- * @returns {Promise<TableResponse>} Resolved Promise in the form of a TableResponse object.
- */
-async function createBigQueryTable() {
-  const options = {
-    schema: {
-      fields: bigQuerySchema
-    },
-    timePartitioning: {
-      type: 'DAY'
-    }
-  };
-  try {
-    return bigquery
-      .dataset(config.bigQuery.datasetId)
-      .createTable(config.bigQuery.tableId, options);
-  } catch(e) {
-    if (e.message.indexOf('Already Exists') === -1) {
-      throw e;
-    }
-  }
-}
-
-/**
  * Checks if the crawled URL is external. if it is, only crawl the current page but not any of its links.
  *
  * @param {object} options The options object for each crawled page.
@@ -162,8 +122,21 @@ async function launchCrawler() {
     start = new Date().getTime();
     console.log(`Creating table ${config.bigQuery.tableId} in dataset ${config.bigQuery.datasetId}`);
 
-    await createBigQueryDataset();
-    await createBigQueryTable();
+    try {
+      await bigquery.createDataset(config.bigQuery.datasetId);
+    } catch(e) {}
+    try {
+      await bigquery
+        .dataset(config.bigQuery.datasetId)
+        .createTable(config.bigQuery.tableId, {
+          schema: {
+            fields: bigQuerySchema
+          },
+          timePartitioning: {
+            type: 'DAY'
+          }
+        });
+    } catch(e) {}
 
     console.log(`Starting crawl from ${config.startUrl}`);
 

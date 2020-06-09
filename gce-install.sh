@@ -1,10 +1,10 @@
 #!/usr/bin/env bash                                                                                                                                                                                                                             
 
-bucket='gs://web-scraper-gcp/config.json'
+bucket='gs://web-scraper-config/config.json'
 
 set -v
 
-curl -sL https://deb.nodesource.com/setup_11.x | bash -
+curl -sL https://deb.nodesource.com/setup_12.x | bash -
 apt-get update && apt-get install -yq git libgconf-2-4 nodejs
 apt-get update && apt-get install -y wget --no-install-recommends
 
