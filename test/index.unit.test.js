@@ -44,19 +44,19 @@ const mockResult = {
   previousUrl: 'https://www.simoahava.com/',
   result: {
     title: 'Test title',
-    metaDescription: null,
-    cookies: [{
-      name: 'test cookie',
-      value: 'test value',
-      domain: 'testdomain.com',
-      path: '/',
-      expires: 1591696664,
-      size: 1,
-      httpOnly: false,
-      secure: false,
-      session: false
-    }]
-  }
+    metaDescription: null
+  },
+  cookies: [{
+    name: 'test cookie',
+    value: 'test value',
+    domain: 'testdomain.com',
+    path: '/',
+    expires: 1591696664,
+    size: 1,
+    httpOnly: false,
+    secure: false,
+    session: false
+  }]
 };
 
 let config;
@@ -149,7 +149,7 @@ test.serial(`should write proper item to BigQuery`, async t => {
     previous_url: mockResult.previousUrl,
     document_title: mockResult.result.title,
     meta_description: mockResult.result.metaDescription,
-    cookies: mockResult.result.cookies.map(c => ({
+    cookies: mockResult.cookies.map(c => ({
       name: c.name,
       value: c.value,
       domain: c.domain,
