@@ -28,7 +28,6 @@ const sinon = require(`sinon`);
 const test = require(`ava`);
 const proxyquire = require(`proxyquire`).noCallThru();
 const tools = require(`@google-cloud/nodejs-repo-tools`);
-const script = require('../index.js');
 
 const mockConfig = require(`./config.test.json`);
 const mockResult = {
@@ -112,10 +111,9 @@ test.serial(`should fail if config doesn't pass validation`, t => {
   const sample = getSample();
 
   // Call function and verify behavior
-  const errorMsg = new RegExp('requires property \\\\"projectId\\\\"');
   t.throws(() => {
     sample.program._init();
-  }, errorMsg);
+  });
 });
 
 test.serial(`should initialize Redis cache if configured to do so`, t => {
@@ -185,7 +183,7 @@ test.serial(`should throw error if dataset creation failed`, async t => {
 
   await t.throwsAsync(async() => {
     await newSample.program._createBigQueryDataset();
-  }, 'Some Error');
+  });
 });
 
 test.serial(`should create dataset with datasetId`, async t => {
@@ -235,7 +233,7 @@ test.serial(`should throw error if table creation failed`, async t => {
 
   await t.throwsAsync(async() => {
     await newSample.program._createBigQueryTable();
-  }, 'Some Error');
+  });
 });
 
 test.serial(`should create table with tableId`, async t => {
