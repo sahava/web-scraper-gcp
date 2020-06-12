@@ -47,6 +47,17 @@ let count = 0;
 let start = null;
 
 /**
+ * Checks if given URL is external.
+ *
+ * @param {string} urlString The URL string to check.
+ * @returns {boolean} Returns true if external.
+ */
+function checkIfUrlExternal(urlString) {
+  const domain = new RegExp(`^https?://${config.domain}/`);
+  return domain.test(urlString);  
+}
+
+/**
  * Writes the crawl result to a BigQuery table.
  *
  * @param {object} result The object returned for each crawled page.
@@ -55,14 +66,9 @@ async function writeToBigQuery(result) {
   console.log(`Crawled ${result.response.url}`);
   count += 1;
 
-  const item = {
+  let item = {
     requested_url: result.options.url,
-    final_url: result.response.url,
-    http_status: result.response.status,
-    content_type: result.response.headers['content-type'],
-    external: result.response.url.indexOf(config.domain) === -1,
-    previous_url: result.previousUrl,
-    cookies: result.response.url.indexOf(config.domain) === -1 ? [] : result.cookies.map(c => ({
+    cookies: !!checkIfUrlExternal(result.response.url) ? [] : result.cookies.map(c => ({
       name: c.name,
       value: c.value,
       domain: c.domain,
@@ -73,10 +79,18 @@ async function writeToBigQuery(result) {
       secure: c.secure,
       session: c.session,
       sameSite: c.sameSite || null
-    })),
-    document_title: result.result.title,
-    meta_description: result.result.metaDescription
+    }))
   };
+
+  if (!config.cookiesOnly) {
+    item.final_url = result.response.url;
+    item.http_status = result.response.status;
+    item.content_type = result.response.headers['content-type'];
+    item.external = checkIfUrlExternal(result.response.url);
+    item.previous_url = result.previousUrl;
+    item.document_title = result.result.title;
+    item.meta_description= result.result.metaDescription;
+  }
 
   await bigquery
     .dataset(config.bigQuery.datasetId)
@@ -91,7 +105,8 @@ async function writeToBigQuery(result) {
  * @returns {boolean} Returns true after setting the new maxDepth.
  */
 function preRequest(options) {
-  if (options.url.indexOf(config.domain) === -1) {
+    if (checkIfUrlExternal(options.url)) {
+    if (config.skipExternal) return false;
     options.maxDepth = 1;
   }
   return true;
