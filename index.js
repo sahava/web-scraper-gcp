@@ -125,6 +125,20 @@ function evaluatePage() {
 }
 
 /**
+ * Custom crawler that fetches ALL cookies.
+ *
+ * @param page Page object.
+ * @param crawl Crawl API.
+ * @returns {Promise<*>}
+ */
+async function customCrawl(page, crawl) {
+  const result = await crawl();
+  const cookies = await page._client.send('Network.getAllCookies');
+  result.cookies = cookies.cookies;
+  return result;
+}
+
+/**
  * Launches the crawler.
  *
  * @returns {Promise<void>}
@@ -155,6 +169,7 @@ async function launchCrawler() {
     const options = extend({
       args: config.puppeteerArgs,
       onSuccess: writeToBigQuery,
+      customCrawl,
       preRequest,
       evaluatePage,
       cache,
@@ -203,8 +218,6 @@ function init() {
       // For testing
       module.exports = {
         _init: init,
-        _createBigQueryTable: createBigQueryTable,
-        _createBigQueryDataset: createBigQueryDataset,
         _writeToBigQuery: writeToBigQuery,
         _preRequest: preRequest,
         _evaluatePage: evaluatePage
