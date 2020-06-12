@@ -54,7 +54,7 @@ let start = null;
  */
 function checkIfUrlExternal(urlString) {
   const domain = new RegExp(`^https?://${config.domain}/`);
-  return domain.test(urlString);
+  return !domain.test(urlString);
 }
 
 /**
