@@ -2,7 +2,6 @@
   "domain": "gtmtools.com",
   "startUrl": "https://www.gtmtools.com/",
   "projectId": "web-scraper-gcp",
-  "cookiesOnly": false,
   "skipExternal": false,
   "bigQuery": {
     "datasetId": "web_scraper_gcp",

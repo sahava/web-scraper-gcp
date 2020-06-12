@@ -54,7 +54,7 @@ let start = null;
  */
 function checkIfUrlExternal(urlString) {
   const domain = new RegExp(`^https?://${config.domain}/`);
-  return domain.test(urlString);  
+  return domain.test(urlString);
 }
 
 /**
@@ -66,8 +66,13 @@ async function writeToBigQuery(result) {
   console.log(`Crawled ${result.response.url}`);
   count += 1;
 
-  let item = {
+  const item = {
     requested_url: result.options.url,
+    final_url: result.response.url,
+    http_status: result.response.status,
+    content_type: result.response.headers['content-type'],
+    external: checkIfUrlExternal(result.response.url),
+    previous_url: result.previousUrl,
     cookies: !!checkIfUrlExternal(result.response.url) ? [] : result.cookies.map(c => ({
       name: c.name,
       value: c.value,
@@ -79,18 +84,10 @@ async function writeToBigQuery(result) {
       secure: c.secure,
       session: c.session,
       sameSite: c.sameSite || null
-    }))
+    })),
+    document_title: result.result.title,
+    meta_description: result.result.metaDescription
   };
-
-  if (!config.cookiesOnly) {
-    item.final_url = result.response.url;
-    item.http_status = result.response.status;
-    item.content_type = result.response.headers['content-type'];
-    item.external = checkIfUrlExternal(result.response.url);
-    item.previous_url = result.previousUrl;
-    item.document_title = result.result.title;
-    item.meta_description= result.result.metaDescription;
-  }
 
   await bigquery
     .dataset(config.bigQuery.datasetId)
@@ -105,7 +102,7 @@ async function writeToBigQuery(result) {
  * @returns {boolean} Returns true after setting the new maxDepth.
  */
 function preRequest(options) {
-    if (checkIfUrlExternal(options.url)) {
+  if (checkIfUrlExternal(options.url)) {
     if (config.skipExternal) return false;
     options.maxDepth = 1;
   }
