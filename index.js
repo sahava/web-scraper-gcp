@@ -53,7 +53,7 @@ let start = null;
  * @returns {boolean} Returns true if external.
  */
 function checkIfUrlExternal(urlString) {
-  const domain = new RegExp(`^https?://${config.domain}/`);
+  const domain = new RegExp(`^https?://(www\.)?${config.domain}/`);
   return !domain.test(urlString);
 }
 
