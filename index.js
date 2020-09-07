@@ -26,16 +26,26 @@ const HCCrawler = require(`headless-chrome-crawler`);
 const RedisCache = require(`headless-chrome-crawler/cache/redis`);
 const extend = require(`lodash/extend`);
 const {Validator} = require(`jsonschema`);
+const Sitemapper = require('sitemapper');
 
 const {BigQuery} = require(`@google-cloud/bigquery`);
 
-const config = require(`./config.json`);
+const configFile = require(`./config.json`);
 const configSchema = require(`./config.schema.json`);
 const bigQuerySchema = require(`./bigquery-schema.json`);
 
+const sitemap = new Sitemapper();
+
+let sitemapPages;
+if (configFile.sitemap.active) {
+  sitemap.fetch(configFile.sitemap.url).then(data => {
+    sitemapPages = data.sites;
+  });
+}
+
 // Initialize new BigQuery client
 const bigquery = new BigQuery({
-  projectId: config.projectId
+  projectId: configFile.projectId
 });
 
 const validator = new Validator;
@@ -53,7 +63,7 @@ let start = null;
  * @returns {boolean} Returns true if external.
  */
 function checkIfUrlExternal(urlString) {
-  const domain = new RegExp(`^https?://(www\.)?${config.domain}/`);
+  const domain = new RegExp(`^https?://(www\.)?${configFile.domain}/`);
   return !domain.test(urlString);
 }
 
@@ -65,6 +75,8 @@ function checkIfUrlExternal(urlString) {
 async function writeToBigQuery(result) {
   console.log(`Crawled ${result.response.url}`);
   count += 1;
+
+  const ls = JSON.parse(result.result.localStorage);
 
   const item = {
     requested_url: result.options.url,
@@ -85,13 +97,17 @@ async function writeToBigQuery(result) {
       session: c.session,
       sameSite: c.sameSite || null
     })),
+    localStorage: Object.keys(ls).map(k => ({
+      name: k,
+      value: ls[k]
+    })),
     document_title: result.result.title,
-    meta_description: result.result.metaDescription
+    meta_description: result.result.metaDescription,
   };
 
   await bigquery
-    .dataset(config.bigQuery.datasetId)
-    .table(config.bigQuery.tableId)
+    .dataset(configFile.bigQuery.datasetId)
+    .table(configFile.bigQuery.tableId)
     .insert([item]);
 }
 
@@ -103,7 +119,7 @@ async function writeToBigQuery(result) {
  */
 function preRequest(options) {
   if (checkIfUrlExternal(options.url)) {
-    if (config.skipExternal) return false;
+    if (configFile.skipExternal) return false;
     options.maxDepth = 1;
   }
   return true;
@@ -118,9 +134,12 @@ function preRequest(options) {
  */
 /* istanbul ignore next */
 function evaluatePage() {
+  const ls = JSON.stringify(window.localStorage);
+  window.localStorage.clear();
   return {
     title: $('title').text(),
-    metaDescription: $('meta[name="description"]').attr('content')
+    metaDescription: $('meta[name="description"]').attr('content'),
+    localStorage: ls
   };
 }
 
@@ -135,6 +154,11 @@ async function customCrawl(page, crawl) {
   const result = await crawl();
   const cookies = await page._client.send('Network.getAllCookies');
   result.cookies = cookies.cookies;
+  if (configFile.clearStorage) {
+    const client = await page.target().createCDPSession();
+    await client.send('Network.clearBrowserCookies');
+    await client.send('Network.clearBrowserCache');
+  }
   return result;
 }
 
@@ -146,15 +170,15 @@ async function customCrawl(page, crawl) {
 async function launchCrawler() {
   try {
     start = new Date().getTime();
-    console.log(`Creating table ${config.bigQuery.tableId} in dataset ${config.bigQuery.datasetId}`);
+    console.log(`Creating table ${configFile.bigQuery.tableId} in dataset ${configFile.bigQuery.datasetId}`);
 
     try {
-      await bigquery.createDataset(config.bigQuery.datasetId);
+      await bigquery.createDataset(configFile.bigQuery.datasetId);
     } catch(e) {}
     try {
       await bigquery
-        .dataset(config.bigQuery.datasetId)
-        .createTable(config.bigQuery.tableId, {
+        .dataset(configFile.bigQuery.datasetId)
+        .createTable(configFile.bigQuery.tableId, {
           schema: {
             fields: bigQuerySchema
           },
@@ -164,28 +188,35 @@ async function launchCrawler() {
         });
     } catch(e) {}
 
-    console.log(`Starting crawl from ${config.startUrl}`);
-
     const options = extend({
-      args: config.puppeteerArgs,
+      args: configFile.puppeteerArgs,
       onSuccess: writeToBigQuery,
       customCrawl,
       preRequest,
       evaluatePage,
       cache,
       skipRequestedRedirect: true
-    }, config.crawlerOptions);
+    }, configFile.crawlerOptions);
 
     const crawler = await HCCrawler.launch(options);
 
-    await crawler.queue({url: config.startUrl, maxDepth: 9999999});
+    if (configFile.sitemap.active) {
+      console.log(`Crawling sitemap ${configFile.sitemap.url}`);
+      await crawler.queue({url: sitemapPages[0], maxDepth: 999999});
+    } else {
+      console.log(`Starting crawl from ${configFile.startUrl}`);
+      await crawler.queue({
+        url: configFile.startUrl,
+        maxDepth: 999999
+      });
+    }
 
     await crawler.onIdle();
     const finish = new Date().getTime();
     console.log(`Crawl took ${finish - start} milliseconds.`);
     console.log(`Crawled ${count} files.`);
     await crawler.close();
-  } catch(e) {
+  } catch(e) {
     console.error(e);
   }
 }
@@ -194,11 +225,11 @@ async function launchCrawler() {
  * Validates the configuration file.
  */
 function init() {
-  const result = validator.validate(config, configSchema);
+  const result = validator.validate(configFile, configSchema);
   if (result.errors.length) {
     throw new Error(`Error(s) in configuration file: ${JSON.stringify(result.errors, null, " ")}`);
   } else {
-    cache = config.redis.active ? new RedisCache({ host: config.redis.host, port: config.redis.port }) : null;
+    cache = configFile.redis.active ? new RedisCache({ host: configFile.redis.host, port: configFile.redis.port }) : null;
     console.log(`Configuration validated successfully`);
   }
 }

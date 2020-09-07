@@ -1,8 +1,13 @@
 {
   "domain": "gtmtools.com",
+  "sitemap": {
+    "active": false,
+    "url": "https://www.example.com/sitemap.xml"
+  },
   "startUrl": "https://www.gtmtools.com/",
   "projectId": "web-scraper-gcp",
-  "skipExternal": false,
+  "skipExternal": true,
+  "clearStorage": true,
   "bigQuery": {
     "datasetId": "web_scraper_gcp",
     "tableId": "crawl_results"
