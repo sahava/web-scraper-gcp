@@ -78,6 +78,22 @@
     ]
   },
   {
+    "description": "localStorage keys set on the page",
+    "name": "localStorage",
+    "type": "RECORD",
+    "mode": "REPEATED",
+    "fields": [
+      {
+        "name": "key",
+	    "type": "string"
+	  },
+      {
+        "name": "value",
+        "type": "string"
+	  }
+    ]
+  },
+  {
     "description": "Document title.",
     "name": "document_title",
     "type": "STRING"
@@ -88,3 +104,4 @@
     "type": "STRING"
   }
 ]
+B
