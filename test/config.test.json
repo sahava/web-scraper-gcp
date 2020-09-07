@@ -1,7 +1,13 @@
 {
   "domain": "simoahava.com",
   "startUrl": "https://www.simoahava.com/",
+  "sitemap": {
+    "active": false,
+    "url": "https://www.example.com/sitemap.xml"
+  },
   "projectId": "web-scraper-gcp",
+  "skipExternal": true,
+  "clearStorage": true,
   "bigQuery": {
     "datasetId": "web_scraper_gcp",
     "tableId": "crawl_results"
