@@ -85,12 +85,12 @@
     "fields": [
       {
         "name": "key",
-	    "type": "string"
-	  },
+        "type": "string"
+      },
       {
         "name": "value",
         "type": "string"
-	  }
+      }
     ]
   },
   {
